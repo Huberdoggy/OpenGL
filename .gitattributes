@@ -1,0 +1,4 @@
+# Will convert all non-ignored, non-binary files to use LF when checking into remote
+# And also LF for the working tree
+
+* text=auto eol=lf
