@@ -24,7 +24,7 @@ void compileShader(unsigned& fragShader, const char* shaderSrc, int& success,
 
     glShaderSource(fragShader, 1, &shaderSrc, NULL);
     glCompileShader(fragShader);
-    
+
     glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
 
     if (!success)
@@ -53,6 +53,19 @@ void activateShaderProg(unsigned& shaderProg, const unsigned* vertexShader,
             << infoLog << std::endl;
         return;
     }
+}
+
+
+std::pair<int, float> alterColor(const unsigned& shaderProg, std::string& myColor) {
+
+    std::pair<int, float> colorPair;
+    double timeValue = glfwGetTime();
+    float greenValue = (sin(static_cast<float>(timeValue)) / 2.0f) + 0.5f;
+    int vertexColorLocation = glGetUniformLocation(shaderProg, myColor.c_str());
+
+    colorPair.first = vertexColorLocation;
+    colorPair.second = greenValue;
+    return colorPair;
 }
 
 

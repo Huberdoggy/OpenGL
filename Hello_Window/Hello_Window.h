@@ -3,6 +3,8 @@
 #include <glad/glad.h> // Include GLAD first - .c file contains required OpenGL headers
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <string>
+#include <vector>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -16,3 +18,5 @@ void compileShader(unsigned& fragShader, const char* shaderSrc, int& success,
 
 void activateShaderProg(unsigned& shaderProg, const unsigned* vertexShader,
    const unsigned& fragShader, int& success, char* infoLog);
+
+std::pair<int, float> alterColor(const unsigned& shaderProg, std::string& myColor);
