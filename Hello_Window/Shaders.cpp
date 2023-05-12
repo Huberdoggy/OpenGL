@@ -6,7 +6,7 @@ void compileShader(unsigned* vertexShader, const char* shaderSrc, int& success,
 
     glShaderSource(*vertexShader, 1, &shaderSrc, NULL);
     glCompileShader(*vertexShader);
-    // And check compile errors again...
+    // And check compile errors...
     glGetShaderiv(*vertexShader, GL_COMPILE_STATUS, &success);
 
     if (!success)
@@ -24,7 +24,7 @@ void compileShader(unsigned& fragShader, const char* shaderSrc, int& success,
 
     glShaderSource(fragShader, 1, &shaderSrc, NULL);
     glCompileShader(fragShader);
-    // And check compile errors again...
+    
     glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
 
     if (!success)
@@ -45,7 +45,6 @@ void activateShaderProg(unsigned& shaderProg, const unsigned* vertexShader,
     glAttachShader(shaderProg, fragShader);
     glLinkProgram(shaderProg);
 
-    // And check for errors
     glGetProgramiv(shaderProg, GL_LINK_STATUS, &success);
     if (!success)
     {

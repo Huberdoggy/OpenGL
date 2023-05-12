@@ -86,7 +86,6 @@ int main() {
     // Del no longer needed shader objs post-linking
     vertexPtr = nullptr;
     glDeleteShader(vertexShader);
-    //vertexPtr = nullptr;
     glDeleteShader(fragShaderO);
     glDeleteShader(fragShaderY);
 
