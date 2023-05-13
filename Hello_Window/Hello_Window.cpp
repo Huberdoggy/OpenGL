@@ -9,13 +9,35 @@ constexpr unsigned SRC_HEIGHT{ 600 };
 const char* vertexShaderSrc = "#version 410 core\n"
 "layout (location = 0) in vec3 aPos;\n" // vec3 input var corresponding to 3D coord
 
+"out vec4 posToColor;\n" // to be used by frag shader for its color
+
 "void main()\n"
 "{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n" // Used as output of shader
-"}\0"; // we need to cast to vec4 by setting w param to 1.0f
+"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n" // we need to cast to vec4 by setting w param to 1.0f
+"   posToColor = gl_Position.xyzw;\n" 
+"}\0"; 
 
-// Yellow
-const char* fragmentShaderSrc_Y = "#version 410 core\n"
+
+const char* fragShadeSrc1 = "#version 410 core\n"
+"in vec4 posToColor;\n"
+
+"out vec4 FragColor;\n"
+
+"void main()\n"
+"{\n"
+"   FragColor = posToColor.xyzw;\n" // First map RGBA 1:1 with input vec
+"   for (int i = 0; i < 4; i++) {\n" // Don't need to touch 'w'
+"       if (FragColor[i] < 0.0f) {\n"
+"           FragColor[i] = 0.5f;\n" // Just give it a val within normalized color range
+"       }\n"
+"       else {\n"
+"           FragColor[i] = posToColor[i];\n"
+"       }\n"
+"   }\n"
+"}\0";
+
+
+const char* fragShadeSrc2 = "#version 410 core\n"
 "out vec4 FragColor;\n" // Assign its out var to the value input from vertex
 
 "uniform vec4 kyleColor;\n" // global
@@ -24,16 +46,6 @@ const char* fragmentShaderSrc_Y = "#version 410 core\n"
 "{\n"
 "   FragColor = kyleColor;\n" // RGBA vals between 0.0 and 1.0. Dynamic vals returned from alterColor & passed as params to glUniform4f in render
 "}\0";
-
-// Firey Orange
-const char* fragmentShaderSrc_O = "#version 410 core\n"
-"out vec4 FragColor;\n" // Only req is 1 output var
-"void main()\n"
-"{\n"
-"   FragColor = vec4(0.93f, 0.35f, 0.0f, 1.0f);\n"
-"}\0";
-
-
 
 /********************************BEGIN MAIN************************************/
 int main() {
@@ -65,6 +77,8 @@ int main() {
         return 1;
     }
 
+    int nrAttributes = getVertexAttribs();
+    std::cout << "Max num vertex attributes supported: " << nrAttributes << '\n';
     // To store status for any compile errors
     int success;
     char infoLog[512];
@@ -77,21 +91,21 @@ int main() {
     compileShader(vertexPtr, vertexShaderSrc, success, infoLog);
 
     // Fragment shaders
-    unsigned fragShaderY = glCreateShader(GL_FRAGMENT_SHADER);
-    unsigned fragShaderO = glCreateShader(GL_FRAGMENT_SHADER);
-    compileShader(fragShaderO, fragmentShaderSrc_O, success, infoLog);
-    compileShader(fragShaderY, fragmentShaderSrc_Y, success, infoLog);
+    unsigned fragShader2 = glCreateShader(GL_FRAGMENT_SHADER);
+    unsigned fragShader1 = glCreateShader(GL_FRAGMENT_SHADER);
+    compileShader(fragShader1, fragShadeSrc1, success, infoLog);
+    compileShader(fragShader2, fragShadeSrc2, success, infoLog);
 
     // Create shader program, link our shaders, and activate it for render calls
     unsigned shaderProgram1 = glCreateProgram(),
         shaderProgram2 = glCreateProgram(); // returns ID referencing new prog obj
-    activateShaderProg(shaderProgram1, vertexPtr, fragShaderO, success, infoLog);
-    activateShaderProg(shaderProgram2, vertexPtr, fragShaderY, success, infoLog);
+    activateShaderProg(shaderProgram1, vertexPtr, fragShader1, success, infoLog);
+    activateShaderProg(shaderProgram2, vertexPtr, fragShader2, success, infoLog);
     // Del no longer needed shader objs post-linking
     vertexPtr = nullptr;
     glDeleteShader(vertexShader);
-    glDeleteShader(fragShaderO);
-    glDeleteShader(fragShaderY);
+    glDeleteShader(fragShader1);
+    glDeleteShader(fragShader2);
 
     // init array of vertices (normalized range so they're visible) 'z' = 0.0
     // since we're rendering 2D here. For single triangle
@@ -107,8 +121,8 @@ int main() {
         0.7f, 0.25f, 0.0f, // top
 
         // Triangle Three
-        -0.4f, 0.75f, 0.0f, // left
-        0.4f, 0.75f, 0.0f, // right
+        -0.7f, 0.75f, 0.0f, // left
+        0.7f, 0.75f, 0.0f, // right
         0.0f, -0.75f, 0.0f, // center tip (inverted)
 
     };
@@ -145,7 +159,7 @@ int main() {
     glBindVertexArray(0);
 
     std::string kyleColor = "kyleColor"; // Will be converted to GLchar for use with uniform color lookup in alterColor
-    // Keep alive
+
     while (!glfwWindowShouldClose(window)) // Has instruction to close been received?
     {
 
@@ -159,7 +173,7 @@ int main() {
         // Draw triangle
         glUseProgram(shaderProgram1);
         glBindVertexArray(vArrayObj);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // set wireframe mode
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // set wireframe mode
         glDrawArrays(GL_TRIANGLES, 0, 6); // primitive type, start index of vertex arr, and how many vertices to draw
         // (aka num triangles)
         glBindVertexArray(0);
@@ -169,7 +183,7 @@ int main() {
         std::pair<int, float> p = alterColor(shaderProgram2, kyleColor);
         glUniform4f(p.first, 0.0f, p.second, 0.0f, 1.0f);
         glBindVertexArray(vArrayObj);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glDrawArrays(GL_TRIANGLES, 6, 3);
 
         glfwSwapBuffers(window); // Prevents artifcats via displaying all drawn 

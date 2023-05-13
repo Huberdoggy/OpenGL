@@ -1,5 +1,11 @@
 #include "Hello_Window.h"
 
+int getVertexAttribs() {
+    int nrAttributes;
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
+    return nrAttributes;
+}
+
 
 void compileShader(unsigned* vertexShader, const char* shaderSrc, int& success,
     char* infoLog) {
