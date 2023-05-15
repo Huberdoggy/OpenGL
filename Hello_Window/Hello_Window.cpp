@@ -85,10 +85,11 @@ int main() {
 
     // create vertex shader & attach our source code (C String in globals)
     // and compile
-    unsigned* vertexPtr = nullptr, vertexShader;
+    //unsigned* vertexPtr = nullptr, vertexShader;
+    unsigned vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    vertexPtr = &vertexShader;
-    compileShader(vertexPtr, vertexShaderSrc, success, infoLog);
+    //vertexPtr = &vertexShader;
+    compileShader(&vertexShader, vertexShaderSrc, success, infoLog);
 
     // Fragment shaders
     unsigned fragShader2 = glCreateShader(GL_FRAGMENT_SHADER);
@@ -99,16 +100,16 @@ int main() {
     // Create shader program, link our shaders, and activate it for render calls
     unsigned shaderProgram1 = glCreateProgram(),
         shaderProgram2 = glCreateProgram(); // returns ID referencing new prog obj
-    activateShaderProg(shaderProgram1, vertexPtr, fragShader1, success, infoLog);
-    activateShaderProg(shaderProgram2, vertexPtr, fragShader2, success, infoLog);
+    activateShaderProg(shaderProgram1, &vertexShader, fragShader1, success, infoLog);
+    activateShaderProg(shaderProgram2, &vertexShader, fragShader2, success, infoLog);
     // Del no longer needed shader objs post-linking
-    vertexPtr = nullptr;
+    //vertexPtr = nullptr;
     glDeleteShader(vertexShader);
     glDeleteShader(fragShader1);
     glDeleteShader(fragShader2);
 
     // init array of vertices (normalized range so they're visible) 'z' = 0.0
-    // since we're rendering 2D here. For single triangle
+    // since we're rendering 2D here.
     float vertices[] = {
         // Triangle One
         -0.9f, -0.9f, 0.0f, // left
